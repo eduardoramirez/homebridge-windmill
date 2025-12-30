@@ -20,23 +20,6 @@
         "type": "string",
         "default": "dashboard.windmillair.com"
       },
-      "authToken": {
-        "title": "Blynk Auth Token",
-        "type": "string"
-      },
-      "deviceId": {
-        "title": "Device ID",
-        "type": "string"
-      },
-      "deviceType": {
-        "title": "Device Type",
-        "type": "string",
-        "enum": [
-          "fan",
-          "purifier"
-        ],
-        "default": "fan"
-      },
       "refreshIntervalSeconds": {
         "title": "Refresh Interval (Seconds)",
         "type": "number",
@@ -58,7 +41,7 @@
               "type": "string"
             },
             "authToken": {
-              "title": "Blynk Auth Token",
+              "title": "Auth Token",
               "type": "string"
             },
             "deviceId": {

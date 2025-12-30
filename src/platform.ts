@@ -136,31 +136,16 @@ export class WindmillAirPlatform implements DynamicPlatformPlugin {
 
   private getConfiguredDevices(): WindmillDevice[] {
     const devices = this.windmillConfig.devices ?? [];
-    if (devices.length > 0) {
-      return devices.map((device, index) => ({
-        name: device.name ?? this.defaultDeviceName(index),
-        authToken: device.authToken,
-        deviceId: device.deviceId,
-        deviceType: device.deviceType ?? 'fan',
-      }));
-    }
-
-    if (this.windmillConfig.authToken) {
-      return [
-        {
-          name: this.windmillConfig.name ?? 'Windmill Fan',
-          authToken: this.windmillConfig.authToken,
-          deviceId: this.windmillConfig.deviceId,
-          deviceType: this.windmillConfig.deviceType ?? 'fan',
-        },
-      ];
-    }
-
-    return [];
+    return devices.map((device, index) => ({
+      name: device.name ?? this.defaultDeviceName(index),
+      authToken: device.authToken,
+      deviceId: device.deviceId,
+      deviceType: device.deviceType ?? 'fan',
+    }));
   }
 
   private defaultDeviceName(index: number): string {
-    const baseName = this.windmillConfig.name ?? 'Windmill Fan';
+    const baseName = this.windmillConfig.name ?? 'Windmill Air';
     return `${baseName} ${index + 1}`;
   }
 
