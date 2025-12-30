@@ -1,5 +1,5 @@
 {
-  "name": "homebridge-windmill-air",
+  "name": "@eduardoramirez/homebridge-windmill-air",
   "displayName": "Homebridge Windmill Air",
   "type": "module",
   "version": "1.0.0",
