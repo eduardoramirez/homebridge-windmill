@@ -1,11 +1,16 @@
-import type { API, Characteristic, DynamicPlatformPlugin, Logging, PlatformAccessory, PlatformConfig, Service } from 'homebridge';
+import type { API, Characteristic, DynamicPlatformPlugin, Logging, PlatformAccessory, Service } from 'homebridge';
+import type { PlatformConfig } from 'homebridge';
 
-import { DEFAULT_BLYNK_HOST } from './config.js';
 import type { WindmillConfig } from './config.js';
 import type { WindmillDevice } from './models.js';
 import { WindmillFanAccessory } from './accessories/fanAccessory.js';
 import { WindmillPurifierAccessory } from './accessories/purifierAccessory.js';
 import { PLATFORM_NAME, PLUGIN_NAME } from './settings.js';
+
+
+interface AccessoryContext {
+  device: WindmillDevice
+}
 
 /**
  * HomebridgePlatform
@@ -20,7 +25,7 @@ export class WindmillAirPlatform implements DynamicPlatformPlugin {
   private readonly windmillConfig: WindmillConfig;
 
   // this is used to track restored cached accessories
-  public readonly accessories: Map<string, PlatformAccessory> = new Map();
+  public readonly accessories: Map<string, PlatformAccessory<AccessoryContext>> = new Map();
   public readonly discoveredCacheUUIDs: string[] = [];
 
   constructor(
@@ -29,8 +34,8 @@ export class WindmillAirPlatform implements DynamicPlatformPlugin {
     public readonly api: API,
   ) {
     this.windmillConfig = config as WindmillConfig;
-    this.host = this.windmillConfig.host ?? DEFAULT_BLYNK_HOST;
-    const refreshSeconds = this.windmillConfig.refreshIntervalSeconds ?? 30;
+    this.host = this.windmillConfig.host;
+    const refreshSeconds = this.windmillConfig.refreshIntervalSeconds;
     this.refreshIntervalMs = Math.max(5, refreshSeconds) * 1000;
     this.Service = api.hap.Service;
     this.Characteristic = api.hap.Characteristic;
@@ -60,7 +65,7 @@ export class WindmillAirPlatform implements DynamicPlatformPlugin {
     this.log.info('Loading accessory from cache:', accessory.displayName);
 
     // add the restored accessory to the accessories cache, so we can track if it has already been registered
-    this.accessories.set(accessory.UUID, accessory);
+    this.accessories.set(accessory.UUID, accessory as PlatformAccessory<AccessoryContext>);
   }
 
   /**
@@ -80,7 +85,7 @@ export class WindmillAirPlatform implements DynamicPlatformPlugin {
       // generate a unique id for the accessory this should be generated from
       // something globally unique, but constant, for example, the device serial
       // number or MAC address
-      const uuid = this.api.hap.uuid.generate(device.deviceId ?? device.authToken);
+      const uuid = this.api.hap.uuid.generate(device.deviceId);
 
       // see if an accessory with the same uuid has already been registered and restored from
       // the cached devices we stored in the `configureAccessory` method above
@@ -106,7 +111,8 @@ export class WindmillAirPlatform implements DynamicPlatformPlugin {
         this.log.info('Adding new accessory:', device.name);
 
         // create a new accessory
-        const accessory = new this.api.platformAccessory(device.name, uuid);
+        const accessory: PlatformAccessory<AccessoryContext> =
+          new this.api.platformAccessory(device.name, uuid);
 
         // store a copy of the device object in the `accessory.context`
         // the `context` property can be used to store any data about the accessory you may need
@@ -135,26 +141,22 @@ export class WindmillAirPlatform implements DynamicPlatformPlugin {
   }
 
   private getConfiguredDevices(): WindmillDevice[] {
-    const devices = this.windmillConfig.devices ?? [];
-    return devices.map((device, index) => ({
-      name: device.name ?? this.defaultDeviceName(index),
+    return this.windmillConfig.devices.map(device => ({
+      name: device.name,
       authToken: device.authToken,
       deviceId: device.deviceId,
-      deviceType: device.deviceType ?? 'fan',
+      deviceType: device.deviceType,
     }));
   }
 
-  private defaultDeviceName(index: number): string {
-    const baseName = this.windmillConfig.name ?? 'Windmill Air';
-    return `${baseName} ${index + 1}`;
-  }
-
-  private createAccessoryHandler(accessory: PlatformAccessory): void {
-    const device = accessory.context.device as WindmillDevice;
-    if (device.deviceType === 'purifier') {
+  private createAccessoryHandler(accessory: PlatformAccessory<AccessoryContext>): void {
+    switch (accessory.context.device.deviceType) {
+    case 'purifier':
       new WindmillPurifierAccessory(this, accessory);
-    } else {
+      break;
+    case 'fan':
       new WindmillFanAccessory(this, accessory);
+      break;
     }
   }
 }

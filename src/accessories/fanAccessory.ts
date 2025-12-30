@@ -12,7 +12,6 @@ type AccessoryDeviceContext = {
 
 export class WindmillFanAccessory {
   private service: Service;
-  private readonly autoFadeService: Service;
   private readonly pins = FAN_PIN_MAP;
   private readonly client: BlynkHttpClient;
 
@@ -30,11 +29,8 @@ export class WindmillFanAccessory {
 
     this.service = this.accessory.getService(this.platform.Service.Fanv2)
       || this.accessory.addService(this.platform.Service.Fanv2);
-    this.autoFadeService = this.accessory.getService('Auto Fade')
-      || this.accessory.addService(this.platform.Service.Switch, 'Auto Fade', 'auto-fade');
 
     this.service.setCharacteristic(this.platform.Characteristic.Name, device.name);
-    this.autoFadeService.setCharacteristic(this.platform.Characteristic.Name, 'Auto Fade');
 
     this.service.getCharacteristic(this.platform.Characteristic.Active)
       .onSet(this.setActive.bind(this))
@@ -44,10 +40,6 @@ export class WindmillFanAccessory {
       .setProps({ minValue: 0, maxValue: 100, minStep: 20 })
       .onSet(this.setRotationSpeed.bind(this))
       .onGet(this.getRotationSpeed.bind(this));
-
-    this.autoFadeService.getCharacteristic(this.platform.Characteristic.On)
-      .onSet(this.setAutoFade.bind(this))
-      .onGet(this.getAutoFade.bind(this));
 
     this.startPolling();
   }
@@ -89,18 +81,6 @@ export class WindmillFanAccessory {
     return this.fromDeviceSpeed(parsed);
   }
 
-  async setAutoFade(value: CharacteristicValue) {
-    const nextValue = value as boolean;
-    await this.client.setPin(this.pins.autoFade, nextValue ? 1 : 0);
-    this.platform.log.debug('Set Characteristic Auto Fade ->', value);
-  }
-
-  async getAutoFade(): Promise<CharacteristicValue> {
-    const value = await this.client.getPin(this.pins.autoFade);
-    const normalized = value.toLowerCase();
-    return normalized === '1' || normalized === 'true' || normalized === 'on';
-  }
-
   private toDeviceSpeed(value: number): number {
     if (value <= 0) {
       return 0;
@@ -136,17 +116,13 @@ export class WindmillFanAccessory {
 
   private async refreshState(): Promise<void> {
     try {
-      const [powerValue, speedValue, autoFadeValue] = await Promise.all([
-        this.client.getPin(this.pins.power),
-        this.client.getPin(this.pins.speed),
-        this.client.getPin(this.pins.autoFade),
-      ]);
+      const values = await this.client.getPins([this.pins.power, this.pins.speed]);
+      const powerValue = values[this.pins.power];
+      const speedValue = values[this.pins.speed];
 
       const powerNormalized = powerValue.toLowerCase();
       const isActive = powerNormalized === '1' || powerNormalized === 'true' || powerNormalized === 'on';
       const parsedSpeed = Number.parseInt(speedValue, 10);
-      const autoFadeNormalized = autoFadeValue.toLowerCase();
-      const isAutoFade = autoFadeNormalized === '1' || autoFadeNormalized === 'true' || autoFadeNormalized === 'on';
 
       this.service.updateCharacteristic(
         this.platform.Characteristic.Active,
@@ -158,10 +134,6 @@ export class WindmillFanAccessory {
           this.fromDeviceSpeed(parsedSpeed),
         );
       }
-      this.autoFadeService.updateCharacteristic(
-        this.platform.Characteristic.On,
-        isAutoFade,
-      );
     } catch (error) {
       this.platform.log.debug('Failed to refresh device state:', error);
     }

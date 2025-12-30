@@ -32,7 +32,10 @@
         "items": {
           "type": "object",
           "required": [
-            "authToken"
+            "name",
+            "authToken",
+            "deviceId",
+            "deviceType"
           ],
           "additionalProperties": false,
           "properties": {

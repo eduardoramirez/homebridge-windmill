@@ -16,6 +16,14 @@ export class BlynkHttpClient {
     return text.trim();
   }
 
+  async getPins(pins: string[]): Promise<{ [key: string]: string }> {
+    // curl 'https://dashboard.windmillair.com/external/api/get?token=DDNbFqCCMiuyjedrD1OMSxozNtXGSHSh&V1&V2'
+    // {"V1":0,"V2":2}% 
+    const url = this.buildGetUrl(pins.join('&'));
+    const text = await this.requestText(url);
+    return JSON.parse(text.trim());
+  }
+
   async setPin(pin: string, value: string | number | boolean): Promise<void> {
     const url = this.buildUpdateUrl(pin, String(value));
     await this.requestText(url);
