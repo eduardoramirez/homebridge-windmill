@@ -17,8 +17,6 @@ export class BlynkHttpClient {
   }
 
   async getPins(pins: string[]): Promise<{ [key: string]: string }> {
-    // curl 'https://dashboard.windmillair.com/external/api/get?token=DDNbFqCCMiuyjedrD1OMSxozNtXGSHSh&V1&V2'
-    // {"V1":0,"V2":2}% 
     const url = this.buildGetUrl(pins.join('&'));
     const text = await this.requestText(url);
     return JSON.parse(text.trim());
