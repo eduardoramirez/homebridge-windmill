@@ -3,7 +3,6 @@
   "displayName": "Homebridge Windmill Air",
   "type": "module",
   "version": "1.0.0",
-  "private": true,
   "description": "Homebridge plugin for Windmill Air fans and purifiers.",
   "author": "Eduardo Ramirez",
   "license": "Apache-2.0",
