@@ -1,17 +1,81 @@
 {
-  "pluginAlias": "ExampleHomebridgePlugin",
+  "pluginAlias": "WindmillAir",
   "pluginType": "platform",
   "singular": true,
   "strictValidation": false,
   "schema": {
     "type": "object",
-    "required": ["name"],
+    "required": [
+      "name"
+    ],
     "additionalProperties": false,
     "properties": {
       "name": {
         "title": "Name",
         "type": "string",
-        "default": "Example Dynamic Platform"
+        "default": "Windmill Air"
+      },
+      "host": {
+        "title": "API Host",
+        "type": "string",
+        "default": "dashboard.windmillair.com"
+      },
+      "authToken": {
+        "title": "Blynk Auth Token",
+        "type": "string"
+      },
+      "deviceId": {
+        "title": "Device ID",
+        "type": "string"
+      },
+      "deviceType": {
+        "title": "Device Type",
+        "type": "string",
+        "enum": [
+          "fan",
+          "purifier"
+        ],
+        "default": "fan"
+      },
+      "refreshIntervalSeconds": {
+        "title": "Refresh Interval (Seconds)",
+        "type": "number",
+        "default": 30,
+        "minimum": 5
+      },
+      "devices": {
+        "title": "Devices",
+        "type": "array",
+        "items": {
+          "type": "object",
+          "required": [
+            "authToken"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "name": {
+              "title": "Name",
+              "type": "string"
+            },
+            "authToken": {
+              "title": "Blynk Auth Token",
+              "type": "string"
+            },
+            "deviceId": {
+              "title": "Device ID",
+              "type": "string"
+            },
+            "deviceType": {
+              "title": "Device Type",
+              "type": "string",
+              "enum": [
+                "fan",
+                "purifier"
+              ],
+              "default": "fan"
+            }
+          }
+        }
       }
     }
   }
