@@ -2,7 +2,7 @@
   "name": "@eduardoramirez/homebridge-windmill-air",
   "displayName": "Homebridge Windmill Air",
   "type": "module",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "Homebridge plugin for Windmill Air fans and purifiers.",
   "author": "Eduardo Ramirez",
   "license": "Apache-2.0",
